@@ -1,0 +1,15 @@
+# Arquivos pesados brutos do TSE (>100MB)
+votacao_secao_2026_BR/
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+env/
+
+# Sistema e Logs
+*.log
+.system_generated/

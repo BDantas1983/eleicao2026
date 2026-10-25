@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparador Urna a Urna (1ºT vs 2ºT) - Lula vs Flávio Bolsonaro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <span class="brand-badge">URNA A URNA</span>
+        <div>
+          <h1>Comparador de Votação por Seção Eleitoral</h1>
+          <p>Conexão TSE e Base do 1º Turno • Comparação direta: Lula (13) vs Flávio Bolsonaro (22)</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="status-pill" id="live-indicator">
+          <span class="dot"></span>
+          <span id="status-text">SIMULADOR AO VIVO</span>
+        </div>
+
+        <div class="mode-selector">
+          <button class="mode-btn active" id="btn-mode-sim" onclick="setMode('sim')">Simulador 2T</button>
+          <button class="mode-btn" id="btn-mode-tse" onclick="setMode('tse')">API TSE Ao Vivo</button>
+        </div>
+
+        <button class="btn" id="btn-play-pause" onclick="togglePlayPause()">
+          <span id="btn-icon">⏸️</span> <span id="btn-label">Pausar</span>
+        </button>
+
+        <select id="speed-select" class="btn" onchange="setSpeed(this.value)">
+          <option value="1">1x (Tempo Real)</option>
+          <option value="5" selected>5x (Rápido)</option>
+          <option value="15">15x (Acelerado)</option>
+          <option value="50">50x (Turbo)</option>
+        </select>
+
+        <button class="btn btn-danger" onclick="resetSim()" title="Reiniciar do zero">🔄 Reset</button>
+      </div>
+    </header>
+
+    <!-- Global Progress Bar -->
+    <div class="progress-card">
+      <div class="progress-header">
+        <span class="progress-title">Totalização Nacional das Seções Eleitorais</span>
+        <span class="progress-stats" id="progress-stats">0,00% apurado (0 de 499.206 seções)</span>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Termômetro Proporcional 2T -->
+    <div class="ratio-bar-container">
+      <div class="ratio-label-row">
+        <span style="color: var(--lula-color); font-weight: 800;">13 - LULA: <span id="ratio-pct-lula">0,00%</span></span>
+        <span style="color: var(--flavio-color); font-weight: 800;">22 - FLÁVIO BOLSONARO: <span id="ratio-pct-flavio">0,00%</span></span>
+      </div>
+      <div class="ratio-bar">
+        <div class="ratio-lula" id="ratio-bar-lula" style="width: 50%;"></div>
+        <div class="ratio-flavio" id="ratio-bar-flavio" style="width: 50%;"></div>
+      </div>
+    </div>
+
+    <!-- Destaque: Placar Acumulado 2T vs 1T -->
+    <div class="duel-arena">
+      <!-- Card Lula -->
+      <div class="candidate-card lula">
+        <div class="card-top">
+          <div class="candidate-info">
+            <h2>LUIZ INÁCIO LULA DA SILVA</h2>
+            <div class="party">Coligação Brasil da Esperança • PT</div>
+          </div>
+          <div class="candidate-number">13</div>
+        </div>
+
+        <div class="score-2t">
+          <div class="score-pct" id="lula-pct-2t">0,00%</div>
+          <div class="score-votes">
+            <div class="votes-number" id="lula-votes-2t">0</div>
+            <div class="votes-label">Votos no 2º Turno</div>
+          </div>
+        </div>
+
+        <div class="comparison-box">
+          <div class="comparison-header">
+            <span>No 1º Turno (nas mesmas seções)</span>
+            <span id="lula-pct-1t">0,00%</span>
+          </div>
+          <div class="comparison-grid">
+            <div class="comp-item">
+              <span class="label">Votos no 1º Turno:</span>
+              <span class="value" id="lula-votes-1t">0</span>
+            </div>
+            <div class="comp-item">
+              <span class="label">Variação Líquida (Delta):</span>
+              <span id="lula-delta-badge" class="delta-badge delta-positive">+0 (+0,00%)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Flávio -->
+      <div class="candidate-card flavio">
+        <div class="card-top">
+          <div class="candidate-info">
+            <h2>FLÁVIO NANTES BOLSONARO</h2>
+            <div class="party">Pelo Bem do Brasil • PL</div>
+          </div>
+          <div class="candidate-number">22</div>
+        </div>
+
+        <div class="score-2t">
+          <div class="score-pct" id="flavio-pct-2t">0,00%</div>
+          <div class="score-votes">
+            <div class="votes-number" id="flavio-votes-2t">0</div>
+            <div class="votes-label">Votos no 2º Turno</div>
+          </div>
+        </div>
+
+        <div class="comparison-box">
+          <div class="comparison-header">
+            <span>No 1º Turno (nas mesmas seções)</span>
+            <span id="flavio-pct-1t">0,00%</span>
+          </div>
+          <div class="comparison-grid">
+            <div class="comp-item">
+              <span class="label">Votos no 1º Turno:</span>
+              <span class="value" id="flavio-votes-1t">0</span>
+            </div>
+            <div class="comp-item">
+              <span class="label">Variação Líquida (Delta):</span>
+              <span id="flavio-delta-badge" class="delta-badge delta-positive">+0 (+0,00%)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🎯 PAINEL DE CONSULTA DIRETA URNA A URNA -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-title">
+        <span>🔍 Consultar Seção Específica (Urna a Urna)</span>
+        <span style="font-size: 12px; color: var(--text-dim);">Puxa a seção exata do 1ºT e compara com o 2ºT</span>
+      </div>
+
+      <div class="search-section-bar">
+        <div class="input-group">
+          <label>Estado (UF):</label>
+          <select id="search-uf" class="custom-input">
+            <option value="SP" selected>SP - São Paulo</option>
+            <option value="RJ">RJ - Rio de Janeiro</option>
+            <option value="MG">MG - Minas Gerais</option>
+            <option value="BA">BA - Bahia</option>
+            <option value="RS">RS - Rio Grande do Sul</option>
+            <option value="PR">PR - Paraná</option>
+            <option value="PE">PE - Pernambuco</option>
+            <option value="CE">CE - Ceará</option>
+            <option value="SC">SC - Santa Catarina</option>
+            <option value="GO">GO - Goiás</option>
+            <option value="MA">MA - Maranhão</option>
+            <option value="PB">PB - Paraíba</option>
+            <option value="PA">PA - Pará</option>
+            <option value="AM">AM - Amazonas</option>
+            <option value="ES">ES - Espírito Santo</option>
+            <option value="RN">RN - Rio Grande do Norte</option>
+            <option value="AL">AL - Alagoas</option>
+            <option value="PI">PI - Piauí</option>
+            <option value="MT">MT - Mato Grosso</option>
+            <option value="MS">MS - Mato Grosso do Sul</option>
+            <option value="DF">DF - Distrito Federal</option>
+            <option value="SE">SE - Sergipe</option>
+            <option value="RO">RO - Rondônia</option>
+            <option value="TO">TO - Tocantins</option>
+            <option value="AC">AC - Acre</option>
+            <option value="AP">AP - Amapá</option>
+            <option value="RR">RR - Roraima</option>
+            <option value="ZZ">ZZ - Exterior</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label>Zona Eleitoral:</label>
+          <input type="number" id="search-zona" class="custom-input" placeholder="Ex: 82" value="82">
+        </div>
+
+        <div class="input-group">
+          <label>Seção Eleitoral:</label>
+          <input type="number" id="search-secao" class="custom-input" placeholder="Ex: 92" value="92">
+        </div>
+
+        <button class="btn btn-primary" onclick="buscarSecao()" style="height: 42px; margin-top: auto;">
+          🔍 Comparar Esta Seção
+        </button>
+      </div>
+
+      <div class="quick-examples">
+        <span style="font-size: 12px; color: var(--text-dim); margin-right: 8px;">Exemplos rápidos:</span>
+        <button class="quick-pill" onclick="preencherExemplo('SP', 82, 92)">Ourinhos (SP) - Zona 82 / Seção 92</button>
+        <button class="quick-pill" onclick="preencherExemplo('CE', 82, 92)">Fortaleza (CE) - Zona 82 / Seção 92</button>
+        <button class="quick-pill" onclick="preencherExemplo('SC', 82, 92)">Guaraciaba (SC) - Zona 82 / Seção 92</button>
+        <button class="quick-pill" onclick="preencherExemplo('BA', 82, 92)">Cícero Dantas (BA) - Zona 82 / Seção 92</button>
+      </div>
+
+      <!-- Card de Resultado da Seção Consultada -->
+      <div id="secao-resultado" class="secao-result-card" style="display: none;">
+        <!-- Preenchido via Javascript -->
+      </div>
+    </div>
+
+    <!-- 📋 TABELA AO VIVO: COMPARATIVO SEÇÃO POR SEÇÃO -->
+    <div class="card">
+      <div class="card-title">
+        <div>
+          <span>📋 Tabela Ao Vivo: Seção por Seção (Urna a Urna)</span>
+          <span style="font-size: 12px; color: var(--text-dim); margin-left: 8px;">Cruzamento automático 1ºT vs 2ºT conforme apuração avança</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="check-viradas" onchange="fetchSecoesComparadas()"> Apenas seções com VIRADA
+          </label>
+          <select id="filter-uf" class="custom-input" style="padding: 4px 8px; font-size: 12px;" onchange="fetchSecoesComparadas()">
+            <option value="">Todas as UFs</option>
+            <option value="SP">SP</option>
+            <option value="RJ">RJ</option>
+            <option value="MG">MG</option>
+            <option value="BA">BA</option>
+            <option value="RS">RS</option>
+            <option value="PR">PR</option>
+            <option value="PE">PE</option>
+            <option value="CE">CE</option>
+            <option value="SC">SC</option>
+            <option value="PA">PA</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>UF</th>
+              <th>Município</th>
+              <th>Zona</th>
+              <th>Seção</th>
+              <th style="color: var(--lula-color);">Lula (1ºT)</th>
+              <th style="color: var(--flavio-color);">Flávio (1ºT)</th>
+              <th style="color: var(--lula-color);">Lula (2ºT)</th>
+              <th style="color: var(--flavio-color);">Flávio (2ºT)</th>
+              <th>Vencedor 1ºT</th>
+              <th>Vencedor 2ºT</th>
+              <th>Status / Virada</th>
+              <th>Delta Líquido</th>
+            </tr>
+          </thead>
+          <tbody id="table-secoes-body">
+            <tr>
+              <td colspan="12" style="text-align: center; color: var(--text-dim); padding: 20px;">
+                Carregando seções apuradas...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

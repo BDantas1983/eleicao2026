@@ -1,0 +1,2 @@
+# Este projeto utiliza bibliotecas padrão do Python (sqlite3, urllib, threading, http.server)
+# Nenhuma dependência externa pesada é necessária.
