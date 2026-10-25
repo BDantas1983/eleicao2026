@@ -91,19 +91,33 @@
           </div>
         </div>
 
-        <div class="comparison-box">
-          <div class="comparison-header">
-            <span>No 1º Turno (nas mesmas seções)</span>
-            <span id="lula-pct-1t">0,00%</span>
+        <!-- Gráfico de Barras Lado a Lado: 1T vs 2T -->
+        <div class="turn-bars-box">
+          <div class="turn-bars-title">
+            <span>📊 VOTAÇÃO 1ºT vs 2ºT (LADO A LADO)</span>
+            <span id="lula-delta-badge" class="delta-badge delta-positive">+0</span>
           </div>
-          <div class="comparison-grid">
-            <div class="comp-item">
-              <span class="label">Votos no 1º Turno:</span>
-              <span class="value" id="lula-votes-1t">0</span>
+          <div class="turn-bars-arena">
+            <!-- Barra 1T -->
+            <div class="turn-col">
+              <span class="bar-top-value" id="lula-bar-val-1t">0</span>
+              <div class="bar-col-track">
+                <div class="bar-col-fill lula-bar-1t" id="lula-bar-fill-1t" style="height: 20%;">
+                  <span class="bar-inner-pct" id="lula-bar-pct-1t">0%</span>
+                </div>
+              </div>
+              <span class="bar-bottom-label">1º Turno</span>
             </div>
-            <div class="comp-item">
-              <span class="label">Variação Líquida (Delta):</span>
-              <span id="lula-delta-badge" class="delta-badge delta-positive">+0 (+0,00%)</span>
+
+            <!-- Barra 2T -->
+            <div class="turn-col">
+              <span class="bar-top-value" id="lula-bar-val-2t" style="color: #fca5a5;">0</span>
+              <div class="bar-col-track">
+                <div class="bar-col-fill lula-bar-2t" id="lula-bar-fill-2t" style="height: 20%;">
+                  <span class="bar-inner-pct" id="lula-bar-pct-2t">0%</span>
+                </div>
+              </div>
+              <span class="bar-bottom-label" style="color: var(--lula-color); font-weight: 700;">2º Turno (Ao Vivo)</span>
             </div>
           </div>
         </div>
@@ -127,19 +141,33 @@
           </div>
         </div>
 
-        <div class="comparison-box">
-          <div class="comparison-header">
-            <span>No 1º Turno (nas mesmas seções)</span>
-            <span id="flavio-pct-1t">0,00%</span>
+        <!-- Gráfico de Barras Lado a Lado: 1T vs 2T -->
+        <div class="turn-bars-box">
+          <div class="turn-bars-title">
+            <span>📊 VOTAÇÃO 1ºT vs 2ºT (LADO A LADO)</span>
+            <span id="flavio-delta-badge" class="delta-badge delta-positive">+0</span>
           </div>
-          <div class="comparison-grid">
-            <div class="comp-item">
-              <span class="label">Votos no 1º Turno:</span>
-              <span class="value" id="flavio-votes-1t">0</span>
+          <div class="turn-bars-arena">
+            <!-- Barra 1T -->
+            <div class="turn-col">
+              <span class="bar-top-value" id="flavio-bar-val-1t">0</span>
+              <div class="bar-col-track">
+                <div class="bar-col-fill flavio-bar-1t" id="flavio-bar-fill-1t" style="height: 20%;">
+                  <span class="bar-inner-pct" id="flavio-bar-pct-1t">0%</span>
+                </div>
+              </div>
+              <span class="bar-bottom-label">1º Turno</span>
             </div>
-            <div class="comp-item">
-              <span class="label">Variação Líquida (Delta):</span>
-              <span id="flavio-delta-badge" class="delta-badge delta-positive">+0 (+0,00%)</span>
+
+            <!-- Barra 2T -->
+            <div class="turn-col">
+              <span class="bar-top-value" id="flavio-bar-val-2t" style="color: #93c5fd;">0</span>
+              <div class="bar-col-track">
+                <div class="bar-col-fill flavio-bar-2t" id="flavio-bar-fill-2t" style="height: 20%;">
+                  <span class="bar-inner-pct" id="flavio-bar-pct-2t">0%</span>
+                </div>
+              </div>
+              <span class="bar-bottom-label" style="color: var(--flavio-color); font-weight: 700;">2º Turno (Ao Vivo)</span>
             </div>
           </div>
         </div>

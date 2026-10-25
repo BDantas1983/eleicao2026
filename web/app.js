@@ -62,6 +62,31 @@ function renderDashboard(data) {
 
   updateBadge('lula-delta-badge', deltaLula, pctCrescimentoLula);
   updateBadge('flavio-delta-badge', deltaFlavio, pctCrescimentoFlavio);
+
+  // 4. Gráficos de Barras Lado a Lado (1T vs 2T)
+  // Lula
+  const lulaMax = Math.max(lulaVotos1t, lulaVotos2t, 1);
+  const lulaH1t = Math.max(16, (lulaVotos1t / lulaMax) * 100);
+  const lulaH2t = Math.max(16, (lulaVotos2t / lulaMax) * 100);
+
+  document.getElementById('lula-bar-fill-1t').style.height = lulaH1t + '%';
+  document.getElementById('lula-bar-fill-2t').style.height = lulaH2t + '%';
+  document.getElementById('lula-bar-pct-1t').innerText = formatPct(lulaPct1t);
+  document.getElementById('lula-bar-pct-2t').innerText = formatPct(lulaPct2t);
+  document.getElementById('lula-bar-val-1t').innerText = formatNumber(lulaVotos1t);
+  document.getElementById('lula-bar-val-2t').innerText = formatNumber(lulaVotos2t);
+
+  // Flávio
+  const flavioMax = Math.max(flavioVotos1t, flavioVotos2t, 1);
+  const flavioH1t = Math.max(16, (flavioVotos1t / flavioMax) * 100);
+  const flavioH2t = Math.max(16, (flavioVotos2t / flavioMax) * 100);
+
+  document.getElementById('flavio-bar-fill-1t').style.height = flavioH1t + '%';
+  document.getElementById('flavio-bar-fill-2t').style.height = flavioH2t + '%';
+  document.getElementById('flavio-bar-pct-1t').innerText = formatPct(flavioPct1t);
+  document.getElementById('flavio-bar-pct-2t').innerText = formatPct(flavioPct2t);
+  document.getElementById('flavio-bar-val-1t').innerText = formatNumber(flavioVotos1t);
+  document.getElementById('flavio-bar-val-2t').innerText = formatNumber(flavioVotos2t);
 }
 
 function updateBadge(id, delta, pct) {
