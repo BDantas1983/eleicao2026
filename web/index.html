@@ -17,34 +17,25 @@
       <div class="brand">
         <span class="brand-badge">URNA A URNA</span>
         <div>
-          <h1>Comparador de Votação por Seção Eleitoral</h1>
-          <p>Conexão TSE e Base do 1º Turno • Comparação direta: Lula (13) vs Flávio Bolsonaro (22)</p>
+          <h1>Apuração Oficial 2º Turno (Dados Reais do TSE)</h1>
+          <p>Conexão direta com a CDN Oficial do TSE • Comparativo com o 1º Turno (Lula vs Flávio Bolsonaro)</p>
         </div>
       </div>
 
       <div class="controls">
         <div class="status-pill" id="live-indicator">
           <span class="dot"></span>
-          <span id="status-text">SIMULADOR AO VIVO</span>
+          <span>DADOS 100% REAIS DO TSE</span>
         </div>
 
-        <div class="mode-selector">
-          <button class="mode-btn active" id="btn-mode-sim" onclick="setMode('sim')">Simulador 2T</button>
-          <button class="mode-btn" id="btn-mode-tse" onclick="setMode('tse')">API TSE Ao Vivo</button>
+        <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+          <span>Boletim TSE:</span>
+          <strong id="tse-update-time" style="color: #38bdf8;">Carregando...</strong>
         </div>
 
-        <button class="btn" id="btn-play-pause" onclick="togglePlayPause()">
-          <span id="btn-icon">⏸️</span> <span id="btn-label">Pausar</span>
+        <button class="btn btn-primary" onclick="forcarAtualizacao()" title="Consultar TSE agora">
+          🔄 Atualizar TSE Agora
         </button>
-
-        <select id="speed-select" class="btn" onchange="setSpeed(this.value)">
-          <option value="1">1x (Tempo Real)</option>
-          <option value="5" selected>5x (Rápido)</option>
-          <option value="15">15x (Acelerado)</option>
-          <option value="50">50x (Turbo)</option>
-        </select>
-
-        <button class="btn btn-danger" onclick="resetSim()" title="Reiniciar do zero">🔄 Reset</button>
       </div>
     </header>
 

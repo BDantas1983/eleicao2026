@@ -13,3 +13,4 @@ env/
 # Sistema e Logs
 *.log
 .system_generated/
+.agents/
