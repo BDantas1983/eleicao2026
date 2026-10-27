@@ -7,7 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-delaunay@6"></script>
 </head>
 <body>
 
@@ -49,6 +52,9 @@
       </button>
       <button class="nav-tab" id="btn-tab-bairros" onclick="switchTab('tab-bairros')">
         🏘️ Bairros & Escolas (51.730 Bairros)
+      </button>
+      <button class="nav-tab" id="btn-tab-mapa" onclick="switchTab('tab-mapa')">
+        🗺️ Mapa Eleitoral por Bairros
       </button>
     </nav>
 
@@ -463,6 +469,22 @@
               <option value="PA">PA - Pará</option>
               <option value="SC">SC - Santa Catarina</option>
               <option value="GO">GO - Goiás</option>
+              <option value="MA">MA - Maranhão</option>
+              <option value="ES">ES - Espírito Santo</option>
+              <option value="PB">PB - Paraíba</option>
+              <option value="AM">AM - Amazonas</option>
+              <option value="MT">MT - Mato Grosso</option>
+              <option value="RN">RN - Rio Grande do Norte</option>
+              <option value="PI">PI - Piauí</option>
+              <option value="AL">AL - Alagoas</option>
+              <option value="DF">DF - Distrito Federal</option>
+              <option value="MS">MS - Mato Grosso do Sul</option>
+              <option value="SE">SE - Sergipe</option>
+              <option value="RO">RO - Rondônia</option>
+              <option value="TO">TO - Tocantins</option>
+              <option value="AC">AC - Acre</option>
+              <option value="AP">AP - Amapá</option>
+              <option value="RR">RR - Roraima</option>
             </select>
           </div>
 
@@ -483,12 +505,45 @@
               <option value="swing">Maior Swing / Variação</option>
             </select>
           </div>
+
+          <button class="btn btn-primary" onclick="abrirCidadeNaAbaMapaAtual()" style="height: 40px; margin-top: auto;">
+            🗺️ Expandir em Tela Cheia
+          </button>
         </div>
       </div>
 
       <!-- KPIs dos Bairros -->
       <div id="bairros-kpi-container" class="kpi-grid">
         <!-- Preenchido via JS -->
+      </div>
+
+      <!-- 🗺️ MAPA INTERATIVO INTEGRADO NA ABA DE BAIRROS -->
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-title" style="flex-wrap: wrap; gap: 12px;">
+          <div>
+            <span id="bairros-inline-map-title">🗺️ Mapa Geográfico de Bairros e Colégios Eleitorais</span>
+            <span style="font-size: 12px; color: var(--text-dim); margin-left: 8px;">Clique em qualquer território de bairro para filtrar suas escolas e comparar 1ºT vs 2ºT</span>
+          </div>
+
+          <div class="map-toolbar">
+            <div class="mode-selector">
+              <button class="mode-btn active" id="inline-mode-2t" onclick="setMapMode('inline', '2t')">🏆 Vencedor 2ºT</button>
+              <button class="mode-btn" id="inline-mode-1t" onclick="setMapMode('inline', '1t')">⏮️ Vencedor 1ºT</button>
+              <button class="mode-btn" id="inline-mode-viradas" onclick="setMapMode('inline', 'viradas')">🔄 Mapa de Viradas</button>
+            </div>
+
+            <div class="mode-selector">
+              <button class="mode-btn active" id="inline-layer-voronoi" onclick="toggleMapLayer('inline', 'voronoi')">🗺️ Territórios</button>
+              <button class="mode-btn active" id="inline-layer-bubbles" onclick="toggleMapLayer('inline', 'bubbles')">⭕ Bolhas</button>
+              <button class="mode-btn" id="inline-layer-schools" onclick="toggleMapLayer('inline', 'schools')">🏫 Escolas</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="inline-map-wrapper">
+          <div id="bairros-map-canvas" class="electoral-map-canvas" style="height: 460px;"></div>
+          <div class="map-legend-bar" id="inline-map-legend"></div>
+        </div>
       </div>
 
       <!-- Tabela de Bairros -->
@@ -529,8 +584,16 @@
       <!-- Tabela de Colégios Eleitorais / Locais de Votação -->
       <div class="card">
         <div class="card-title">
-          <span id="escolas-table-title">🏫 Principais Colégios e Locais de Votação</span>
-          <span style="font-size: 12px; color: var(--text-dim);">Resultado nos maiores estabelecimentos de ensino e pontos de votação da cidade</span>
+          <div>
+            <span id="escolas-table-title">🏫 Principais Colégios e Locais de Votação</span>
+            <span id="escolas-filter-badge" style="display: none; margin-left: 10px;" class="badge-status badge-virou"></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button id="btn-limpar-filtro-bairro" class="btn" style="display: none; padding: 4px 10px; font-size: 12px;" onclick="limparFiltroBairroEscolas()">
+              ✖ Mostrar Todos os Bairros
+            </button>
+            <span style="font-size: 12px; color: var(--text-dim);">Resultado nos maiores estabelecimentos de ensino e pontos de votação da cidade</span>
+          </div>
         </div>
 
         <div class="table-responsive">
@@ -557,6 +620,119 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- ABA 4: MAPA ELEITORAL POR BAIRROS (DEDICADA)-->
+    <!-- ========================================== -->
+    <div id="tab-mapa" class="tab-content">
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-title" style="flex-wrap: wrap; gap: 12px;">
+          <div>
+            <span>🗺️ Mapa Interativo das Cidades Dividido por Bairros & Colégios Eleitorais</span>
+            <span style="font-size: 12px; color: var(--text-dim); margin-left: 8px;">Malha territorial de bairros (Voronoi), bolhas proporcionais de votos e pinos de escolas</span>
+          </div>
+          <div class="quick-examples" style="margin-bottom: 0;">
+            <span style="font-size: 12px; color: var(--text-dim);">Cidades rápidas:</span>
+            <button class="quick-pill" onclick="selecionarCidadeNoMapa('SP', 71072)">São Paulo (SP)</button>
+            <button class="quick-pill" onclick="selecionarCidadeNoMapa('RJ', 60011)">Rio de Janeiro (RJ)</button>
+            <button class="quick-pill" onclick="selecionarCidadeNoMapa('MG', 41238)">Belo Horizonte (MG)</button>
+            <button class="quick-pill" onclick="selecionarCidadeNoMapa('BA', 38490)">Salvador (BA)</button>
+            <button class="quick-pill" onclick="selecionarCidadeNoMapa('PR', 75353)">Curitiba (PR)</button>
+            <button class="quick-pill" onclick="selecionarCidadeNoMapa('RS', 88013)">Porto Alegre (RS)</button>
+            <button class="quick-pill" onclick="selecionarCidadeNoMapa('PE', 25313)">Recife (PE)</button>
+            <button class="quick-pill" onclick="selecionarCidadeNoMapa('DF', 97012)">Brasília (DF)</button>
+          </div>
+        </div>
+
+        <div class="search-section-bar" style="margin-bottom: 10px;">
+          <div class="input-group">
+            <label>Estado (UF):</label>
+            <select id="mapa-uf" class="custom-input" onchange="atualizarCidadesSelectMapa()">
+              <option value="SP" selected>SP - São Paulo</option>
+              <option value="RJ">RJ - Rio de Janeiro</option>
+              <option value="MG">MG - Minas Gerais</option>
+              <option value="BA">BA - Bahia</option>
+              <option value="RS">RS - Rio Grande do Sul</option>
+              <option value="PR">PR - Paraná</option>
+              <option value="PE">PE - Pernambuco</option>
+              <option value="CE">CE - Ceará</option>
+              <option value="PA">PA - Pará</option>
+              <option value="SC">SC - Santa Catarina</option>
+              <option value="GO">GO - Goiás</option>
+              <option value="MA">MA - Maranhão</option>
+              <option value="ES">ES - Espírito Santo</option>
+              <option value="PB">PB - Paraíba</option>
+              <option value="AM">AM - Amazonas</option>
+              <option value="MT">MT - Mato Grosso</option>
+              <option value="RN">RN - Rio Grande do Norte</option>
+              <option value="PI">PI - Piauí</option>
+              <option value="AL">AL - Alagoas</option>
+              <option value="DF">DF - Distrito Federal</option>
+              <option value="MS">MS - Mato Grosso do Sul</option>
+              <option value="SE">SE - Sergipe</option>
+              <option value="RO">RO - Rondônia</option>
+              <option value="TO">TO - Tocantins</option>
+              <option value="AC">AC - Acre</option>
+              <option value="AP">AP - Amapá</option>
+              <option value="RR">RR - Roraima</option>
+            </select>
+          </div>
+
+          <div class="input-group" style="flex: 2;">
+            <label>Cidade / Município:</label>
+            <select id="mapa-cidade-select" class="custom-input" onchange="carregarMapaDedicado()">
+              <!-- Preenchido via JS -->
+            </select>
+          </div>
+
+          <div class="input-group" style="flex: 1.5;">
+            <label>Localizar Bairro no Mapa:</label>
+            <input type="text" id="mapa-busca-bairro" class="custom-input" placeholder="Digite um bairro (ex: Mooca, Copacabana, Centro)..." oninput="buscarBairroNoMapaInput()">
+          </div>
+
+          <button class="btn" onclick="resetarZoomMapaDedicado()" style="height: 40px; margin-top: auto;">
+            🎯 Centralizar Cidade
+          </button>
+        </div>
+
+        <div class="map-toolbar" style="justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 6px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">MODO DE COR:</span>
+            <div class="mode-selector">
+              <button class="mode-btn active" id="full-mode-2t" onclick="setMapMode('full', '2t')">🏆 Vencedor 2º Turno (Gradiente)</button>
+              <button class="mode-btn" id="full-mode-1t" onclick="setMapMode('full', '1t')">⏮️ Vencedor 1º Turno (Comparar)</button>
+              <button class="mode-btn" id="full-mode-viradas" onclick="setMapMode('full', 'viradas')">🔄 Mapa de Viradas (1ºT ➔ 2ºT)</button>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">CAMADAS VISUAIS:</span>
+            <div class="mode-selector">
+              <button class="mode-btn active" id="full-layer-voronoi" onclick="toggleMapLayer('full', 'voronoi')">🗺️ Polígonos de Bairro</button>
+              <button class="mode-btn active" id="full-layer-bubbles" onclick="toggleMapLayer('full', 'bubbles')">⭕ Bolhas de Votos</button>
+              <button class="mode-btn active" id="full-layer-schools" onclick="toggleMapLayer('full', 'schools')">🏫 Pinos das Escolas</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Arena Principal do Mapa: Mapa à Esquerda + Inspetor do Bairro à Direita -->
+      <div class="map-split-layout">
+        <div class="card map-main-card">
+          <div id="full-map-canvas" class="electoral-map-canvas" style="height: 640px;"></div>
+          <div class="map-legend-bar" id="full-map-legend"></div>
+        </div>
+
+        <div class="card map-sidebar-card">
+          <div class="card-title">
+            <span id="map-inspector-title">📌 Raio-X do Bairro Selecionado</span>
+          </div>
+          <div id="map-inspector-body">
+            <!-- Preenchido via JS quando clica num bairro ou mostra o resumo da cidade -->
+          </div>
         </div>
       </div>
     </div>

@@ -302,7 +302,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
             uf = query.get("uf", ["SP"])[0].upper().strip()
             q = query.get("q", [""])[0].upper().strip()
             virada = query.get("virada", [""])[0]
-            limit = min(int(query.get("limit", ["100"])[0]), 500)
+            limit = min(int(query.get("limit", ["300"])[0]), 900)
 
             conn = sqlite3.connect(DB_PATH)
             c = conn.cursor()
@@ -311,7 +311,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
                        lula_1t, flavio_1t, validos_1t, pct_lula_1t, pct_flavio_1t, vencedor_1t,
                        lula_2t, flavio_2t, validos_2t, pct_lula_2t, pct_flavio_2t, vencedor_2t,
                        delta_lula, delta_flavio, swing_lula, virada_municipio,
-                       viradas_secoes_lula, viradas_secoes_flavio
+                       viradas_secoes_lula, viradas_secoes_flavio, lat, lng
                 FROM resumo_municipios
                 WHERE 1=1
             """
@@ -357,7 +357,9 @@ class CustomHandler(SimpleHTTPRequestHandler):
                     "swing_lula": r[18],
                     "virada": r[19],
                     "viradas_secoes_lula": r[20],
-                    "viradas_secoes_flavio": r[21]
+                    "viradas_secoes_flavio": r[21],
+                    "lat": r[22],
+                    "lng": r[23]
                 })
             conn.close()
 
@@ -381,7 +383,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
                        lula_1t, flavio_1t, validos_1t, pct_lula_1t, pct_flavio_1t, vencedor_1t,
                        lula_2t, flavio_2t, validos_2t, pct_lula_2t, pct_flavio_2t, vencedor_2t,
                        delta_lula, delta_flavio, swing_lula, virada_municipio,
-                       viradas_secoes_lula, viradas_secoes_flavio
+                       viradas_secoes_lula, viradas_secoes_flavio, lat, lng
                 FROM resumo_municipios
                 WHERE uf = ?
             """
@@ -409,16 +411,18 @@ class CustomHandler(SimpleHTTPRequestHandler):
                 "lula_1t": r[4], "flavio_1t": r[5], "validos_1t": r[6], "pct_lula_1t": r[7], "pct_flavio_1t": r[8], "vencedor_1t": r[9],
                 "lula_2t": r[10], "flavio_2t": r[11], "validos_2t": r[12], "pct_lula_2t": r[13], "pct_flavio_2t": r[14], "vencedor_2t": r[15],
                 "delta_lula": r[16], "delta_flavio": r[17], "swing_lula": r[18], "virada": r[19],
-                "viradas_secoes_lula": r[20], "viradas_secoes_flavio": r[21]
+                "viradas_secoes_lula": r[20], "viradas_secoes_flavio": r[21],
+                "lat": r[22], "lng": r[23]
             }
 
-            # Bairros desse município
+            # Bairros desse município (com coordenadas geográficas)
             c.execute("""
                 SELECT nm_bairro, total_secoes, lula_1t, flavio_1t, pct_lula_1t, pct_flavio_1t, vencedor_1t,
-                       lula_2t, flavio_2t, pct_lula_2t, pct_flavio_2t, vencedor_2t, delta_lula, delta_flavio, swing_lula, virada_bairro, viradas_secoes_lula
+                       lula_2t, flavio_2t, pct_lula_2t, pct_flavio_2t, vencedor_2t, delta_lula, delta_flavio, swing_lula,
+                       virada_bairro, viradas_secoes_lula, viradas_secoes_flavio, lat, lng
                 FROM resumo_bairros
                 WHERE uf = ? AND cod_municipio = ?
-                ORDER BY total_secoes DESC LIMIT 150
+                ORDER BY total_secoes DESC LIMIT 1000
             """, (r[0], r[1]))
             bairros = []
             for b in c.fetchall():
@@ -426,33 +430,31 @@ class CustomHandler(SimpleHTTPRequestHandler):
                     "bairro": b[0], "total_secoes": b[1],
                     "lula_1t": b[2], "flavio_1t": b[3], "pct_lula_1t": b[4], "pct_flavio_1t": b[5], "vencedor_1t": b[6],
                     "lula_2t": b[7], "flavio_2t": b[8], "pct_lula_2t": b[9], "pct_flavio_2t": b[10], "vencedor_2t": b[11],
-                    "delta_lula": b[12], "delta_flavio": b[13], "swing_lula": b[14], "virada": b[15], "viradas_lula": b[16]
+                    "delta_lula": b[12], "delta_flavio": b[13], "swing_lula": b[14], "virada": b[15],
+                    "viradas_lula": b[16], "viradas_flavio": b[17], "lat": b[18], "lng": b[19]
                 })
 
-            # Top Escolas/Locais de Votação
+            # Escolas/Locais de Votação (com coordenadas geográficas da tabela consolidada resumo_locais)
             c.execute("""
-                SELECT nm_local, nm_bairro, ds_endereco, COUNT(*) as secoes,
-                       SUM(votos_lula_1t), SUM(votos_flavio_1t),
-                       SUM(votos_lula_2t), SUM(votos_flavio_2t),
-                       SUM(CASE WHEN virada != 'Não' THEN 1 ELSE 0 END) as viradas
-                FROM secoes_completo
-                WHERE uf = ? AND cod_municipio = ? AND nm_local != ''
-                GROUP BY nm_local, nm_bairro
-                ORDER BY secoes DESC LIMIT 60
+                SELECT nm_local, nm_bairro, ds_endereco, total_secoes,
+                       lula_1t, flavio_1t, pct_lula_1t, pct_flavio_1t, vencedor_1t,
+                       lula_2t, flavio_2t, pct_lula_2t, pct_flavio_2t, vencedor_2t,
+                       delta_lula, delta_flavio, swing_lula, virada_local,
+                       viradas_secoes_lula, viradas_secoes_flavio, lat, lng
+                FROM resumo_locais
+                WHERE uf = ? AND cod_municipio = ?
+                ORDER BY total_secoes DESC LIMIT 1500
             """, (r[0], r[1]))
             locais = []
             for loc in c.fetchall():
-                val2 = loc[6] + loc[7]
-                p2_l = round(loc[6]/val2*100, 2) if val2 > 0 else 0
-                p2_f = round(loc[7]/val2*100, 2) if val2 > 0 else 0
-                venc = "Lula" if loc[6] > loc[7] else ("Flávio" if loc[7] > loc[6] else "Empate")
                 locais.append({
                     "local": loc[0], "bairro": loc[1], "endereco": loc[2], "secoes": loc[3],
-                    "lula_1t": loc[4], "flavio_1t": loc[5],
-                    "lula_2t": loc[6], "flavio_2t": loc[7],
-                    "pct_lula_2t": p2_l, "pct_flavio_2t": p2_f,
-                    "vencedor_2t": venc,
-                    "viradas": loc[8]
+                    "lula_1t": loc[4], "flavio_1t": loc[5], "pct_lula_1t": loc[6], "pct_flavio_1t": loc[7], "vencedor_1t": loc[8],
+                    "lula_2t": loc[9], "flavio_2t": loc[10], "pct_lula_2t": loc[11], "pct_flavio_2t": loc[12], "vencedor_2t": loc[13],
+                    "delta_lula": loc[14], "delta_flavio": loc[15], "swing_lula": loc[16], "virada_local": loc[17],
+                    "viradas_lula": loc[18], "viradas_flavio": loc[19],
+                    "viradas": (loc[18] or 0) + (loc[19] or 0),
+                    "lat": loc[20], "lng": loc[21]
                 })
 
             conn.close()
@@ -473,11 +475,11 @@ class CustomHandler(SimpleHTTPRequestHandler):
             cod_mun = query.get("cod_mun", [""])[0]
             nome_mun = query.get("municipio", [""])[0].upper().strip()
             sort = query.get("sort", ["secoes"])[0]
-            limit = min(int(query.get("limit", ["100"])[0]), 300)
+            limit = min(int(query.get("limit", ["300"])[0]), 1000)
 
             conn = sqlite3.connect(DB_PATH)
             c = conn.cursor()
-            sql = "SELECT uf, cod_municipio, nm_municipio, nm_bairro, total_secoes, lula_1t, flavio_1t, pct_lula_1t, pct_flavio_1t, vencedor_1t, lula_2t, flavio_2t, pct_lula_2t, pct_flavio_2t, vencedor_2t, delta_lula, delta_flavio, swing_lula, virada_bairro, viradas_secoes_lula FROM resumo_bairros WHERE uf = ?"
+            sql = "SELECT uf, cod_municipio, nm_municipio, nm_bairro, total_secoes, lula_1t, flavio_1t, pct_lula_1t, pct_flavio_1t, vencedor_1t, lula_2t, flavio_2t, pct_lula_2t, pct_flavio_2t, vencedor_2t, delta_lula, delta_flavio, swing_lula, virada_bairro, viradas_secoes_lula, viradas_secoes_flavio, lat, lng FROM resumo_bairros WHERE uf = ?"
             params = [uf]
             if cod_mun:
                 sql += " AND cod_municipio = ?"
@@ -507,7 +509,8 @@ class CustomHandler(SimpleHTTPRequestHandler):
                     "uf": b[0], "cod_mun": b[1], "nm_mun": b[2], "bairro": b[3], "total_secoes": b[4],
                     "lula_1t": b[5], "flavio_1t": b[6], "pct_lula_1t": b[7], "pct_flavio_1t": b[8], "vencedor_1t": b[9],
                     "lula_2t": b[10], "flavio_2t": b[11], "pct_lula_2t": b[12], "pct_flavio_2t": b[13], "vencedor_2t": b[14],
-                    "delta_lula": b[15], "delta_flavio": b[16], "swing_lula": b[17], "virada": b[18], "viradas_lula": b[19]
+                    "delta_lula": b[15], "delta_flavio": b[16], "swing_lula": b[17], "virada": b[18],
+                    "viradas_lula": b[19], "viradas_flavio": b[20], "lat": b[21], "lng": b[22]
                 })
             conn.close()
             self.send_response(200)

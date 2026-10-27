@@ -170,7 +170,9 @@ def enriquecer_banco():
             END as virada_municipio,
 
             SUM(CASE WHEN virada = 'Flávio -> Lula' THEN 1 ELSE 0 END) as viradas_secoes_lula,
-            SUM(CASE WHEN virada = 'Lula -> Flávio' THEN 1 ELSE 0 END) as viradas_secoes_flavio
+            SUM(CASE WHEN virada = 'Lula -> Flávio' THEN 1 ELSE 0 END) as viradas_secoes_flavio,
+            ROUND(AVG(CASE WHEN nr_lat BETWEEN -34.0 AND 6.0 AND nr_long BETWEEN -75.0 AND -32.0 THEN nr_lat END), 6) as lat,
+            ROUND(AVG(CASE WHEN nr_lat BETWEEN -34.0 AND 6.0 AND nr_long BETWEEN -75.0 AND -32.0 THEN nr_long END), 6) as lng
         FROM secoes_completo
         GROUP BY uf, cod_municipio, nm_municipio
     """)
@@ -223,13 +225,63 @@ def enriquecer_banco():
             END as virada_bairro,
 
             SUM(CASE WHEN virada = 'Flávio -> Lula' THEN 1 ELSE 0 END) as viradas_secoes_lula,
-            SUM(CASE WHEN virada = 'Lula -> Flávio' THEN 1 ELSE 0 END) as viradas_secoes_flavio
+            SUM(CASE WHEN virada = 'Lula -> Flávio' THEN 1 ELSE 0 END) as viradas_secoes_flavio,
+            ROUND(AVG(CASE WHEN nr_lat BETWEEN -34.0 AND 6.0 AND nr_long BETWEEN -75.0 AND -32.0 THEN nr_lat END), 6) as lat,
+            ROUND(AVG(CASE WHEN nr_lat BETWEEN -34.0 AND 6.0 AND nr_long BETWEEN -75.0 AND -32.0 THEN nr_long END), 6) as lng
         FROM secoes_completo
         GROUP BY uf, cod_municipio, nm_municipio, nm_bairro
     """)
     cursor.execute("CREATE INDEX idx_bairros_busca ON resumo_bairros (uf, cod_municipio)")
     cursor.execute("CREATE INDEX idx_bairros_nome ON resumo_bairros (uf, nm_municipio, nm_bairro)")
     cursor.execute("CREATE INDEX idx_bairros_virada ON resumo_bairros (virada_bairro)")
+
+    # 4. Gera Tabela Consolidada de Locais de Votação (Escolas Geo-referenciadas)
+    print("Gerando tabela consolidada: resumo_locais...")
+    cursor.execute("DROP TABLE IF EXISTS resumo_locais")
+    cursor.execute("""
+        CREATE TABLE resumo_locais AS
+        SELECT 
+            uf,
+            cod_municipio,
+            nm_municipio,
+            nm_bairro,
+            nm_local,
+            MAX(ds_endereco) as ds_endereco,
+            COUNT(*) as total_secoes,
+            SUM(votos_lula_1t) as lula_1t,
+            SUM(votos_flavio_1t) as flavio_1t,
+            SUM(votos_validos_1t) as validos_1t,
+            ROUND(CAST(SUM(votos_lula_1t) AS REAL) / MAX(1, SUM(votos_validos_1t)) * 100, 2) as pct_lula_1t,
+            ROUND(CAST(SUM(votos_flavio_1t) AS REAL) / MAX(1, SUM(votos_validos_1t)) * 100, 2) as pct_flavio_1t,
+            CASE WHEN SUM(votos_lula_1t) > SUM(votos_flavio_1t) THEN 'Lula'
+                 WHEN SUM(votos_flavio_1t) > SUM(votos_lula_1t) THEN 'Flávio'
+                 ELSE 'Empate' END as vencedor_1t,
+            SUM(votos_lula_2t) as lula_2t,
+            SUM(votos_flavio_2t) as flavio_2t,
+            SUM(votos_validos_2t) as validos_2t,
+            ROUND(CAST(SUM(votos_lula_2t) AS REAL) / MAX(1, SUM(votos_validos_2t)) * 100, 2) as pct_lula_2t,
+            ROUND(CAST(SUM(votos_flavio_2t) AS REAL) / MAX(1, SUM(votos_validos_2t)) * 100, 2) as pct_flavio_2t,
+            CASE WHEN SUM(votos_lula_2t) > SUM(votos_flavio_2t) THEN 'Lula'
+                 WHEN SUM(votos_flavio_2t) > SUM(votos_lula_2t) THEN 'Flávio'
+                 ELSE 'Empate' END as vencedor_2t,
+            SUM(votos_lula_2t) - SUM(votos_lula_1t) as delta_lula,
+            SUM(votos_flavio_2t) - SUM(votos_flavio_1t) as delta_flavio,
+            ROUND((CAST(SUM(votos_lula_2t) AS REAL) / MAX(1, SUM(votos_validos_2t)) * 100) - 
+                  (CAST(SUM(votos_lula_1t) AS REAL) / MAX(1, SUM(votos_validos_1t)) * 100), 2) as swing_lula,
+            CASE 
+                WHEN SUM(votos_flavio_1t) > SUM(votos_lula_1t) AND SUM(votos_lula_2t) > SUM(votos_flavio_2t) THEN 'Flávio -> Lula'
+                WHEN SUM(votos_lula_1t) > SUM(votos_flavio_1t) AND SUM(votos_flavio_2t) > SUM(votos_lula_2t) THEN 'Lula -> Flávio'
+                ELSE 'Não'
+            END as virada_local,
+            SUM(CASE WHEN virada = 'Flávio -> Lula' THEN 1 ELSE 0 END) as viradas_secoes_lula,
+            SUM(CASE WHEN virada = 'Lula -> Flávio' THEN 1 ELSE 0 END) as viradas_secoes_flavio,
+            ROUND(AVG(CASE WHEN nr_lat BETWEEN -34.0 AND 6.0 AND nr_long BETWEEN -75.0 AND -32.0 THEN nr_lat END), 6) as lat,
+            ROUND(AVG(CASE WHEN nr_lat BETWEEN -34.0 AND 6.0 AND nr_long BETWEEN -75.0 AND -32.0 THEN nr_long END), 6) as lng
+        FROM secoes_completo
+        WHERE nm_local IS NOT NULL AND nm_local != ''
+        GROUP BY uf, cod_municipio, nm_municipio, nm_bairro, nm_local
+    """)
+    cursor.execute("CREATE INDEX idx_locais_busca ON resumo_locais (uf, cod_municipio)")
 
     conn.commit()
     conn.close()
