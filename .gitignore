@@ -1,5 +1,6 @@
 # Arquivos pesados brutos do TSE (>100MB)
 votacao_secao_2026_BR/
+eleitorado_locais_votacao_2026/
 *.zip
 
 # Python

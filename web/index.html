@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Comparador Urna a Urna (1ºT vs 2ºT) - Lula vs Flávio Bolsonaro</title>
+  <title>Painel Eleitoral 2026 - Urna a Urna, Cidades e Bairros</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -15,10 +15,10 @@
     <!-- Header -->
     <header>
       <div class="brand">
-        <span class="brand-badge">URNA A URNA</span>
+        <span class="brand-badge">ELEIÇÃO 2026</span>
         <div>
-          <h1>Apuração Oficial 2º Turno (Dados Reais do TSE)</h1>
-          <p>Conexão direta com a CDN Oficial do TSE • Comparativo com o 1º Turno (Lula vs Flávio Bolsonaro)</p>
+          <h1>Apuração Oficial TSE (1º Turno vs 2º Turno)</h1>
+          <p>Microdados Consolidados • Análise Urna a Urna, Cidades, Bairros e Colégios Eleitorais</p>
         </div>
       </div>
 
@@ -29,268 +29,538 @@
         </div>
 
         <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-          <span>Boletim TSE:</span>
-          <strong id="tse-update-time" style="color: #38bdf8;">Carregando...</strong>
+          <span>Boletim:</span>
+          <strong id="tse-update-time" style="color: #38bdf8;">100% Apurado</strong>
         </div>
 
-        <button class="btn btn-primary" onclick="forcarAtualizacao()" title="Consultar TSE agora">
-          🔄 Atualizar TSE Agora
+        <button class="btn btn-primary" onclick="forcarAtualizacao()" title="Sincronizar base de dados">
+          🔄 Atualizar Dados
         </button>
       </div>
     </header>
 
-    <!-- Global Progress Bar -->
-    <div class="progress-card">
-      <div class="progress-header">
-        <span class="progress-title">Totalização Nacional das Seções Eleitorais</span>
-        <span class="progress-stats" id="progress-stats">0,00% apurado (0 de 499.206 seções)</span>
+    <!-- Navegação por Abas -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" id="btn-tab-geral" onclick="switchTab('tab-geral')">
+        🇧🇷 Visão Nacional & Urna a Urna
+      </button>
+      <button class="nav-tab" id="btn-tab-cidades" onclick="switchTab('tab-cidades')">
+        🏙️ Dashboard por Cidades (5.570 Municípios)
+      </button>
+      <button class="nav-tab" id="btn-tab-bairros" onclick="switchTab('tab-bairros')">
+        🏘️ Bairros & Escolas (51.730 Bairros)
+      </button>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- ABA 1: VISÃO NACIONAL & URNA A URNA        -->
+    <!-- ========================================== -->
+    <div id="tab-geral" class="tab-content active">
+      <!-- Global Progress Bar -->
+      <div class="progress-card">
+        <div class="progress-header">
+          <span class="progress-title">Totalização Nacional Oficial</span>
+          <span class="progress-stats" id="progress-stats">100,00% apurado (499.206 de 499.206 seções)</span>
+        </div>
+        <div class="bar-wrapper">
+          <div class="bar-fill" id="progress-bar-fill" style="width: 100%;"></div>
+        </div>
       </div>
-      <div class="bar-wrapper">
-        <div class="bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
+
+      <!-- 📊 KPIs Consolidados: Viradas e Crescimento -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">🔄 Viradas Flávio ➔ Lula</span>
+          <div class="kpi-val" style="color: var(--lula-color);" id="kpi-viradas-lula">31.395 seções</div>
+          <span class="kpi-sub">Seções vencidas por Flávio no 1T e viradas por Lula no 2T</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">🔄 Viradas Lula ➔ Flávio</span>
+          <div class="kpi-val" style="color: var(--flavio-color);" id="kpi-viradas-flavio">565 seções</div>
+          <span class="kpi-sub">Seções vencidas por Lula no 1T e viradas por Flávio no 2T</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">📈 Crescimento Líquido (Lula)</span>
+          <div class="kpi-val" style="color: #4ade80;">+10.376.694 votos</div>
+          <span class="kpi-sub">+19,26% em relação ao 1º Turno (53,8M ➔ 64,2M)</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">📈 Crescimento Líquido (Flávio)</span>
+          <div class="kpi-val" style="color: #60a5fa;">+3.721.538 votos</div>
+          <span class="kpi-sub">+6,63% em relação ao 1º Turno (56,1M ➔ 59,8M)</span>
+        </div>
+      </div>
+
+      <!-- Termômetro Proporcional 2T -->
+      <div class="ratio-bar-container">
+        <div class="ratio-label-row">
+          <span style="color: var(--lula-color); font-weight: 800;">13 - LULA: <span id="ratio-pct-lula">51,79%</span></span>
+          <span style="color: var(--flavio-color); font-weight: 800;">22 - FLÁVIO BOLSONARO: <span id="ratio-pct-flavio">48,21%</span></span>
+        </div>
+        <div class="ratio-bar">
+          <div class="ratio-lula" id="ratio-bar-lula" style="width: 51.79%;"></div>
+          <div class="ratio-flavio" id="ratio-bar-flavio" style="width: 48.21%;"></div>
+        </div>
+      </div>
+
+      <!-- Destaque: Placar Acumulado 2T vs 1T -->
+      <div class="duel-arena">
+        <!-- Card Lula -->
+        <div class="candidate-card lula">
+          <div class="card-top">
+            <div class="candidate-info">
+              <h2>LUIZ INÁCIO LULA DA SILVA</h2>
+              <div class="party">Coligação Brasil da Esperança • PT</div>
+            </div>
+            <div class="candidate-number">13</div>
+          </div>
+
+          <div class="score-2t">
+            <div class="score-pct" id="lula-pct-2t">51,79%</div>
+            <div class="score-votes">
+              <div class="votes-number" id="lula-votes-2t">64.256.232</div>
+              <div class="votes-label">Votos no 2º Turno (Eleito)</div>
+            </div>
+          </div>
+
+          <!-- Gráfico de Barras Lado a Lado -->
+          <div class="turn-bars-box">
+            <div class="turn-bars-title">
+              <span>📊 VOTAÇÃO 1ºT vs 2ºT (LADO A LADO)</span>
+              <span id="lula-delta-badge" class="delta-badge delta-positive">+10.376.694 (+19,26%)</span>
+            </div>
+            <div class="turn-bars-arena">
+              <div class="turn-col">
+                <span class="bar-top-value" id="lula-bar-val-1t">53.879.538</span>
+                <div class="bar-col-track">
+                  <div class="bar-col-fill lula-bar-1t" id="lula-bar-fill-1t" style="height: 83%;">
+                    <span class="bar-inner-pct" id="lula-bar-pct-1t">45,17%</span>
+                  </div>
+                </div>
+                <span class="bar-bottom-label">1º Turno</span>
+              </div>
+
+              <div class="turn-col">
+                <span class="bar-top-value" id="lula-bar-val-2t" style="color: #fca5a5;">64.256.232</span>
+                <div class="bar-col-track">
+                  <div class="bar-col-fill lula-bar-2t" id="lula-bar-fill-2t" style="height: 100%;">
+                    <span class="bar-inner-pct" id="lula-bar-pct-2t">51,79%</span>
+                  </div>
+                </div>
+                <span class="bar-bottom-label" style="color: var(--lula-color); font-weight: 700;">2º Turno Final</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Flávio -->
+        <div class="candidate-card flavio">
+          <div class="card-top">
+            <div class="candidate-info">
+              <h2>FLÁVIO NANTES BOLSONARO</h2>
+              <div class="party">Pelo Bem do Brasil • PL</div>
+            </div>
+            <div class="candidate-number">22</div>
+          </div>
+
+          <div class="score-2t">
+            <div class="score-pct" id="flavio-pct-2t">48,21%</div>
+            <div class="score-votes">
+              <div class="votes-number" id="flavio-votes-2t">59.826.041</div>
+              <div class="votes-label">Votos no 2º Turno</div>
+            </div>
+          </div>
+
+          <!-- Gráfico de Barras Lado a Lado -->
+          <div class="turn-bars-box">
+            <div class="turn-bars-title">
+              <span>📊 VOTAÇÃO 1ºT vs 2ºT (LADO A LADO)</span>
+              <span id="flavio-delta-badge" class="delta-badge delta-positive">+3.721.538 (+6,63%)</span>
+            </div>
+            <div class="turn-bars-arena">
+              <div class="turn-col">
+                <span class="bar-top-value" id="flavio-bar-val-1t">56.104.503</span>
+                <div class="bar-col-track">
+                  <div class="bar-col-fill flavio-bar-1t" id="flavio-bar-fill-1t" style="height: 87%;">
+                    <span class="bar-inner-pct" id="flavio-bar-pct-1t">47,03%</span>
+                  </div>
+                </div>
+                <span class="bar-bottom-label">1º Turno</span>
+              </div>
+
+              <div class="turn-col">
+                <span class="bar-top-value" id="flavio-bar-val-2t" style="color: #93c5fd;">59.826.041</span>
+                <div class="bar-col-track">
+                  <div class="bar-col-fill flavio-bar-2t" id="flavio-bar-fill-2t" style="height: 93%;">
+                    <span class="bar-inner-pct" id="flavio-bar-pct-2t">48,21%</span>
+                  </div>
+                </div>
+                <span class="bar-bottom-label" style="color: var(--flavio-color); font-weight: 700;">2º Turno Final</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🎯 PAINEL DE CONSULTA DIRETA URNA A URNA -->
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-title">
+          <span>🔍 Consultar Seção Específica (Urna a Urna)</span>
+          <span style="font-size: 12px; color: var(--text-dim);">Traz a escola, endereço, bairro, votos 1T vs 2T e delta</span>
+        </div>
+
+        <div class="search-section-bar">
+          <div class="input-group">
+            <label>Estado (UF):</label>
+            <select id="search-uf" class="custom-input">
+              <option value="SP" selected>SP - São Paulo</option>
+              <option value="RJ">RJ - Rio de Janeiro</option>
+              <option value="MG">MG - Minas Gerais</option>
+              <option value="BA">BA - Bahia</option>
+              <option value="RS">RS - Rio Grande do Sul</option>
+              <option value="PR">PR - Paraná</option>
+              <option value="PE">PE - Pernambuco</option>
+              <option value="CE">CE - Ceará</option>
+              <option value="PA">PA - Pará</option>
+              <option value="SC">SC - Santa Catarina</option>
+              <option value="GO">GO - Goiás</option>
+              <option value="MA">MA - Maranhão</option>
+              <option value="PB">PB - Paraíba</option>
+              <option value="AM">AM - Amazonas</option>
+              <option value="ES">ES - Espírito Santo</option>
+              <option value="RN">RN - Rio Grande do Norte</option>
+              <option value="AL">AL - Alagoas</option>
+              <option value="PI">PI - Piauí</option>
+              <option value="MT">MT - Mato Grosso</option>
+              <option value="MS">MS - Mato Grosso do Sul</option>
+              <option value="DF">DF - Distrito Federal</option>
+              <option value="SE">SE - Sergipe</option>
+              <option value="RO">RO - Rondônia</option>
+              <option value="TO">TO - Tocantins</option>
+              <option value="AC">AC - Acre</option>
+              <option value="AP">AP - Amapá</option>
+              <option value="RR">RR - Roraima</option>
+              <option value="ZZ">ZZ - Exterior</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Zona Eleitoral:</label>
+            <input type="number" id="search-zona" class="custom-input" placeholder="Ex: 82" value="82">
+          </div>
+
+          <div class="input-group">
+            <label>Seção Eleitoral:</label>
+            <input type="number" id="search-secao" class="custom-input" placeholder="Ex: 92" value="92">
+          </div>
+
+          <button class="btn btn-primary" onclick="buscarSecao()" style="height: 42px; margin-top: auto;">
+            🔍 Comparar Esta Seção
+          </button>
+        </div>
+
+        <div class="quick-examples">
+          <span style="font-size: 12px; color: var(--text-dim); margin-right: 8px;">Exemplos rápidos:</span>
+          <button class="quick-pill" onclick="preencherExemplo('SP', 82, 92)">Ourinhos (SP) - Z82 / S92</button>
+          <button class="quick-pill" onclick="preencherExemplo('SP', 1, 10)">São Paulo (SP) - Z1 / S10 (Bela Vista)</button>
+          <button class="quick-pill" onclick="preencherExemplo('RJ', 16, 50)">Rio de Janeiro (RJ) - Z16 / S50 (Copacabana)</button>
+          <button class="quick-pill" onclick="preencherExemplo('BA', 39, 18)">Vitória da Conquista (BA) - Z39 / S18 (Virada)</button>
+        </div>
+
+        <!-- Card de Resultado da Seção Consultada -->
+        <div id="secao-resultado" class="secao-result-card" style="display: none;">
+          <!-- Preenchido via Javascript -->
+        </div>
+      </div>
+
+      <!-- 📋 TABELA SEÇÃO POR SEÇÃO -->
+      <div class="card">
+        <div class="card-title">
+          <div>
+            <span>📋 Tabela de Seções Eleitorais (Urna a Urna)</span>
+            <span style="font-size: 12px; color: var(--text-dim); margin-left: 8px;">Detalhamento nominal com status de virada e variação de margem</span>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <select id="filter-virada" class="custom-input" style="padding: 6px 10px; font-size: 12px;" onchange="fetchSecoesComparadas()">
+              <option value="viradas" selected>🔥 Apenas seções com VIRADA</option>
+              <option value="flavio_lula">🔄 Viradas Flávio ➔ Lula</option>
+              <option value="lula_flavio">🔄 Viradas Lula ➔ Flávio</option>
+              <option value="">Todas as Seções</option>
+            </select>
+            <select id="filter-uf" class="custom-input" style="padding: 6px 10px; font-size: 12px;" onchange="fetchSecoesComparadas()">
+              <option value="">Todas as UFs</option>
+              <option value="SP">SP - São Paulo</option>
+              <option value="MG">MG - Minas Gerais</option>
+              <option value="RJ">RJ - Rio de Janeiro</option>
+              <option value="BA">BA - Bahia</option>
+              <option value="RS">RS - Rio Grande do Sul</option>
+              <option value="PR">PR - Paraná</option>
+              <option value="PE">PE - Pernambuco</option>
+              <option value="CE">CE - Ceará</option>
+              <option value="PA">PA - Pará</option>
+              <option value="SC">SC - Santa Catarina</option>
+              <option value="GO">GO - Goiás</option>
+              <option value="MA">MA - Maranhão</option>
+              <option value="ES">ES - Espírito Santo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>UF</th>
+                <th>Município</th>
+                <th>Bairro</th>
+                <th>Zona / Seção</th>
+                <th style="color: var(--lula-color);">Lula (1ºT)</th>
+                <th style="color: var(--flavio-color);">Flávio (1ºT)</th>
+                <th style="color: var(--lula-color);">Lula (2ºT)</th>
+                <th style="color: var(--flavio-color);">Flávio (2ºT)</th>
+                <th>Vencedor 1ºT</th>
+                <th>Vencedor 2ºT</th>
+                <th>Virada?</th>
+                <th>Delta Lula</th>
+              </tr>
+            </thead>
+            <tbody id="table-secoes-body">
+              <tr>
+                <td colspan="12" style="text-align: center; color: var(--text-dim); padding: 20px;">
+                  Carregando seções...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- Termômetro Proporcional 2T -->
-    <div class="ratio-bar-container">
-      <div class="ratio-label-row">
-        <span style="color: var(--lula-color); font-weight: 800;">13 - LULA: <span id="ratio-pct-lula">0,00%</span></span>
-        <span style="color: var(--flavio-color); font-weight: 800;">22 - FLÁVIO BOLSONARO: <span id="ratio-pct-flavio">0,00%</span></span>
-      </div>
-      <div class="ratio-bar">
-        <div class="ratio-lula" id="ratio-bar-lula" style="width: 50%;"></div>
-        <div class="ratio-flavio" id="ratio-bar-flavio" style="width: 50%;"></div>
-      </div>
-    </div>
-
-    <!-- Destaque: Placar Acumulado 2T vs 1T -->
-    <div class="duel-arena">
-      <!-- Card Lula -->
-      <div class="candidate-card lula">
-        <div class="card-top">
-          <div class="candidate-info">
-            <h2>LUIZ INÁCIO LULA DA SILVA</h2>
-            <div class="party">Coligação Brasil da Esperança • PT</div>
-          </div>
-          <div class="candidate-number">13</div>
+    <!-- ========================================== -->
+    <!-- ABA 2: DASHBOARD POR CIDADES (MUNICÍPIOS) -->
+    <!-- ========================================== -->
+    <div id="tab-cidades" class="tab-content">
+      <!-- Barra de Filtros de Município -->
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-title">
+          <span>🏙️ Selecionar Município para Análise Aprofundada</span>
+          <span style="font-size: 12px; color: var(--text-dim);">Cruze os dados totais da cidade entre o 1ºT e o 2ºT</span>
         </div>
 
-        <div class="score-2t">
-          <div class="score-pct" id="lula-pct-2t">0,00%</div>
-          <div class="score-votes">
-            <div class="votes-number" id="lula-votes-2t">0</div>
-            <div class="votes-label">Votos no 2º Turno</div>
+        <div class="search-section-bar">
+          <div class="input-group">
+            <label>Estado (UF):</label>
+            <select id="cidades-uf" class="custom-input" onchange="carregarMunicipiosEstado()">
+              <option value="SP" selected>SP - São Paulo</option>
+              <option value="RJ">RJ - Rio de Janeiro</option>
+              <option value="MG">MG - Minas Gerais</option>
+              <option value="BA">BA - Bahia</option>
+              <option value="RS">RS - Rio Grande do Sul</option>
+              <option value="PR">PR - Paraná</option>
+              <option value="PE">PE - Pernambuco</option>
+              <option value="CE">CE - Ceará</option>
+              <option value="PA">PA - Pará</option>
+              <option value="SC">SC - Santa Catarina</option>
+              <option value="GO">GO - Goiás</option>
+              <option value="MA">MA - Maranhão</option>
+              <option value="ES">ES - Espírito Santo</option>
+              <option value="PB">PB - Paraíba</option>
+              <option value="AM">AM - Amazonas</option>
+              <option value="MT">MT - Mato Grosso</option>
+              <option value="RN">RN - Rio Grande do Norte</option>
+              <option value="PI">PI - Piauí</option>
+              <option value="AL">AL - Alagoas</option>
+              <option value="DF">DF - Distrito Federal</option>
+              <option value="MS">MS - Mato Grosso do Sul</option>
+              <option value="SE">SE - Sergipe</option>
+              <option value="RO">RO - Rondônia</option>
+              <option value="TO">TO - Tocantins</option>
+              <option value="AC">AC - Acre</option>
+              <option value="AP">AP - Amapá</option>
+              <option value="RR">RR - Roraima</option>
+            </select>
           </div>
-        </div>
 
-        <!-- Gráfico de Barras Lado a Lado: 1T vs 2T -->
-        <div class="turn-bars-box">
-          <div class="turn-bars-title">
-            <span>📊 VOTAÇÃO 1ºT vs 2ºT (LADO A LADO)</span>
-            <span id="lula-delta-badge" class="delta-badge delta-positive">+0</span>
+          <div class="input-group" style="flex: 2;">
+            <label>Buscar Cidade por Nome:</label>
+            <input type="text" id="cidades-search-input" class="custom-input" placeholder="Ex: Campinas, Guarulhos, Niterói..." oninput="filtrarCidadesDigitacao()">
           </div>
-          <div class="turn-bars-arena">
-            <!-- Barra 1T -->
-            <div class="turn-col">
-              <span class="bar-top-value" id="lula-bar-val-1t">0</span>
-              <div class="bar-col-track">
-                <div class="bar-col-fill lula-bar-1t" id="lula-bar-fill-1t" style="height: 20%;">
-                  <span class="bar-inner-pct" id="lula-bar-pct-1t">0%</span>
-                </div>
-              </div>
-              <span class="bar-bottom-label">1º Turno</span>
-            </div>
 
-            <!-- Barra 2T -->
-            <div class="turn-col">
-              <span class="bar-top-value" id="lula-bar-val-2t" style="color: #fca5a5;">0</span>
-              <div class="bar-col-track">
-                <div class="bar-col-fill lula-bar-2t" id="lula-bar-fill-2t" style="height: 20%;">
-                  <span class="bar-inner-pct" id="lula-bar-pct-2t">0%</span>
-                </div>
-              </div>
-              <span class="bar-bottom-label" style="color: var(--lula-color); font-weight: 700;">2º Turno (Ao Vivo)</span>
-            </div>
+          <div class="input-group">
+            <label>Filtro de Viradas:</label>
+            <select id="cidades-filter-virada" class="custom-input" onchange="carregarMunicipiosEstado()">
+              <option value="">Todas as Cidades</option>
+              <option value="viradas">Apenas Cidades com Virada Total</option>
+            </select>
           </div>
         </div>
       </div>
 
-      <!-- Card Flávio -->
-      <div class="candidate-card flavio">
-        <div class="card-top">
-          <div class="candidate-info">
-            <h2>FLÁVIO NANTES BOLSONARO</h2>
-            <div class="party">Pelo Bem do Brasil • PL</div>
-          </div>
-          <div class="candidate-number">22</div>
-        </div>
-
-        <div class="score-2t">
-          <div class="score-pct" id="flavio-pct-2t">0,00%</div>
-          <div class="score-votes">
-            <div class="votes-number" id="flavio-votes-2t">0</div>
-            <div class="votes-label">Votos no 2º Turno</div>
-          </div>
-        </div>
-
-        <!-- Gráfico de Barras Lado a Lado: 1T vs 2T -->
-        <div class="turn-bars-box">
-          <div class="turn-bars-title">
-            <span>📊 VOTAÇÃO 1ºT vs 2ºT (LADO A LADO)</span>
-            <span id="flavio-delta-badge" class="delta-badge delta-positive">+0</span>
-          </div>
-          <div class="turn-bars-arena">
-            <!-- Barra 1T -->
-            <div class="turn-col">
-              <span class="bar-top-value" id="flavio-bar-val-1t">0</span>
-              <div class="bar-col-track">
-                <div class="bar-col-fill flavio-bar-1t" id="flavio-bar-fill-1t" style="height: 20%;">
-                  <span class="bar-inner-pct" id="flavio-bar-pct-1t">0%</span>
-                </div>
-              </div>
-              <span class="bar-bottom-label">1º Turno</span>
-            </div>
-
-            <!-- Barra 2T -->
-            <div class="turn-col">
-              <span class="bar-top-value" id="flavio-bar-val-2t" style="color: #93c5fd;">0</span>
-              <div class="bar-col-track">
-                <div class="bar-col-fill flavio-bar-2t" id="flavio-bar-fill-2t" style="height: 20%;">
-                  <span class="bar-inner-pct" id="flavio-bar-pct-2t">0%</span>
-                </div>
-              </div>
-              <span class="bar-bottom-label" style="color: var(--flavio-color); font-weight: 700;">2º Turno (Ao Vivo)</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 🎯 PAINEL DE CONSULTA DIRETA URNA A URNA -->
-    <div class="card" style="margin-bottom: 24px;">
-      <div class="card-title">
-        <span>🔍 Consultar Seção Específica (Urna a Urna)</span>
-        <span style="font-size: 12px; color: var(--text-dim);">Puxa a seção exata do 1ºT e compara com o 2ºT</span>
-      </div>
-
-      <div class="search-section-bar">
-        <div class="input-group">
-          <label>Estado (UF):</label>
-          <select id="search-uf" class="custom-input">
-            <option value="SP" selected>SP - São Paulo</option>
-            <option value="RJ">RJ - Rio de Janeiro</option>
-            <option value="MG">MG - Minas Gerais</option>
-            <option value="BA">BA - Bahia</option>
-            <option value="RS">RS - Rio Grande do Sul</option>
-            <option value="PR">PR - Paraná</option>
-            <option value="PE">PE - Pernambuco</option>
-            <option value="CE">CE - Ceará</option>
-            <option value="SC">SC - Santa Catarina</option>
-            <option value="GO">GO - Goiás</option>
-            <option value="MA">MA - Maranhão</option>
-            <option value="PB">PB - Paraíba</option>
-            <option value="PA">PA - Pará</option>
-            <option value="AM">AM - Amazonas</option>
-            <option value="ES">ES - Espírito Santo</option>
-            <option value="RN">RN - Rio Grande do Norte</option>
-            <option value="AL">AL - Alagoas</option>
-            <option value="PI">PI - Piauí</option>
-            <option value="MT">MT - Mato Grosso</option>
-            <option value="MS">MS - Mato Grosso do Sul</option>
-            <option value="DF">DF - Distrito Federal</option>
-            <option value="SE">SE - Sergipe</option>
-            <option value="RO">RO - Rondônia</option>
-            <option value="TO">TO - Tocantins</option>
-            <option value="AC">AC - Acre</option>
-            <option value="AP">AP - Amapá</option>
-            <option value="RR">RR - Roraima</option>
-            <option value="ZZ">ZZ - Exterior</option>
-          </select>
-        </div>
-
-        <div class="input-group">
-          <label>Zona Eleitoral:</label>
-          <input type="number" id="search-zona" class="custom-input" placeholder="Ex: 82" value="82">
-        </div>
-
-        <div class="input-group">
-          <label>Seção Eleitoral:</label>
-          <input type="number" id="search-secao" class="custom-input" placeholder="Ex: 92" value="92">
-        </div>
-
-        <button class="btn btn-primary" onclick="buscarSecao()" style="height: 42px; margin-top: auto;">
-          🔍 Comparar Esta Seção
-        </button>
-      </div>
-
-      <div class="quick-examples">
-        <span style="font-size: 12px; color: var(--text-dim); margin-right: 8px;">Exemplos rápidos:</span>
-        <button class="quick-pill" onclick="preencherExemplo('SP', 82, 92)">Ourinhos (SP) - Zona 82 / Seção 92</button>
-        <button class="quick-pill" onclick="preencherExemplo('CE', 82, 92)">Fortaleza (CE) - Zona 82 / Seção 92</button>
-        <button class="quick-pill" onclick="preencherExemplo('SC', 82, 92)">Guaraciaba (SC) - Zona 82 / Seção 92</button>
-        <button class="quick-pill" onclick="preencherExemplo('BA', 82, 92)">Cícero Dantas (BA) - Zona 82 / Seção 92</button>
-      </div>
-
-      <!-- Card de Resultado da Seção Consultada -->
-      <div id="secao-resultado" class="secao-result-card" style="display: none;">
+      <!-- Card de Destaque da Cidade Selecionada -->
+      <div id="city-highlight-container">
         <!-- Preenchido via Javascript -->
       </div>
+
+      <!-- Tabela de Municípios do Estado -->
+      <div class="card">
+        <div class="card-title">
+          <span id="cidades-table-title">📋 Cidades de São Paulo (SP)</span>
+          <span style="font-size: 12px; color: var(--text-dim);">Clique em qualquer cidade para abrir seus detalhes e bairros</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Município</th>
+                <th>Seções</th>
+                <th style="color: var(--lula-color);">Lula (1ºT)</th>
+                <th style="color: var(--flavio-color);">Flávio (1ºT)</th>
+                <th style="color: var(--lula-color);">Lula (2ºT)</th>
+                <th style="color: var(--flavio-color);">Flávio (2ºT)</th>
+                <th>Vencedor 1T</th>
+                <th>Vencedor 2T</th>
+                <th>Virada Total?</th>
+                <th>Seções Viradas (Pró-Lula)</th>
+                <th>Swing Líquido</th>
+              </tr>
+            </thead>
+            <tbody id="table-cidades-body">
+              <tr>
+                <td colspan="11" style="text-align: center; color: var(--text-dim); padding: 20px;">
+                  Carregando municípios...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <!-- 📋 TABELA AO VIVO: COMPARATIVO SEÇÃO POR SEÇÃO -->
-    <div class="card">
-      <div class="card-title">
-        <div>
-          <span>📋 Tabela Ao Vivo: Seção por Seção (Urna a Urna)</span>
-          <span style="font-size: 12px; color: var(--text-dim); margin-left: 8px;">Cruzamento automático 1ºT vs 2ºT conforme apuração avança</span>
+    <!-- ========================================== -->
+    <!-- ABA 3: DASHBOARD POR BAIRROS & ESCOLAS     -->
+    <!-- ========================================== -->
+    <div id="tab-bairros" class="tab-content">
+      <!-- Filtros de Cidade e Bairros -->
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-title">
+          <span>🏘️ Detalhamento Intra-Urbano (Bairros e Colégios Eleitorais)</span>
+          <span style="font-size: 12px; color: var(--text-dim);">Selecione o estado e o município para visualizar a distribuição dos votos por bairro</span>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <label style="font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-            <input type="checkbox" id="check-viradas" onchange="fetchSecoesComparadas()"> Apenas seções com VIRADA
-          </label>
-          <select id="filter-uf" class="custom-input" style="padding: 4px 8px; font-size: 12px;" onchange="fetchSecoesComparadas()">
-            <option value="">Todas as UFs</option>
-            <option value="SP">SP</option>
-            <option value="RJ">RJ</option>
-            <option value="MG">MG</option>
-            <option value="BA">BA</option>
-            <option value="RS">RS</option>
-            <option value="PR">PR</option>
-            <option value="PE">PE</option>
-            <option value="CE">CE</option>
-            <option value="SC">SC</option>
-            <option value="PA">PA</option>
-          </select>
+
+        <div class="search-section-bar">
+          <div class="input-group">
+            <label>Estado (UF):</label>
+            <select id="bairros-uf" class="custom-input" onchange="atualizarCidadesSelectBairros()">
+              <option value="SP" selected>SP - São Paulo</option>
+              <option value="RJ">RJ - Rio de Janeiro</option>
+              <option value="MG">MG - Minas Gerais</option>
+              <option value="BA">BA - Bahia</option>
+              <option value="RS">RS - Rio Grande do Sul</option>
+              <option value="PR">PR - Paraná</option>
+              <option value="PE">PE - Pernambuco</option>
+              <option value="CE">CE - Ceará</option>
+              <option value="PA">PA - Pará</option>
+              <option value="SC">SC - Santa Catarina</option>
+              <option value="GO">GO - Goiás</option>
+            </select>
+          </div>
+
+          <div class="input-group" style="flex: 2;">
+            <label>Cidade / Município:</label>
+            <select id="bairros-cidade-select" class="custom-input" onchange="carregarBairrosCidade()">
+              <!-- Preenchido via JS -->
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Ordenar Bairros por:</label>
+            <select id="bairros-sort" class="custom-input" onchange="carregarBairrosCidade()">
+              <option value="secoes" selected>Mais Seções / Maior População</option>
+              <option value="lula">Maior % de Votos (Lula)</option>
+              <option value="flavio">Maior % de Votos (Flávio)</option>
+              <option value="viradas">Mais Seções com Virada</option>
+              <option value="swing">Maior Swing / Variação</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>UF</th>
-              <th>Município</th>
-              <th>Zona</th>
-              <th>Seção</th>
-              <th style="color: var(--lula-color);">Lula (1ºT)</th>
-              <th style="color: var(--flavio-color);">Flávio (1ºT)</th>
-              <th style="color: var(--lula-color);">Lula (2ºT)</th>
-              <th style="color: var(--flavio-color);">Flávio (2ºT)</th>
-              <th>Vencedor 1ºT</th>
-              <th>Vencedor 2ºT</th>
-              <th>Status / Virada</th>
-              <th>Delta Líquido</th>
-            </tr>
-          </thead>
-          <tbody id="table-secoes-body">
-            <tr>
-              <td colspan="12" style="text-align: center; color: var(--text-dim); padding: 20px;">
-                Carregando seções apuradas...
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- KPIs dos Bairros -->
+      <div id="bairros-kpi-container" class="kpi-grid">
+        <!-- Preenchido via JS -->
+      </div>
+
+      <!-- Tabela de Bairros -->
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-title">
+          <span id="bairros-table-title">📍 Ranking de Bairros</span>
+          <span style="font-size: 12px; color: var(--text-dim);">Mapeamento oficial com votos e percentuais em cada turno</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Bairro</th>
+                <th>Seções</th>
+                <th style="color: var(--lula-color);">Lula (1ºT)</th>
+                <th style="color: var(--flavio-color);">Flávio (1ºT)</th>
+                <th style="color: var(--lula-color);">Lula (2ºT)</th>
+                <th style="color: var(--flavio-color);">Flávio (2ºT)</th>
+                <th>Vencedor 1T</th>
+                <th>Vencedor 2T</th>
+                <th>Status</th>
+                <th>Seções Viradas (Pró-Lula)</th>
+                <th>Swing</th>
+              </tr>
+            </thead>
+            <tbody id="table-bairros-body">
+              <tr>
+                <td colspan="11" style="text-align: center; color: var(--text-dim); padding: 20px;">
+                  Carregando bairros...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tabela de Colégios Eleitorais / Locais de Votação -->
+      <div class="card">
+        <div class="card-title">
+          <span id="escolas-table-title">🏫 Principais Colégios e Locais de Votação</span>
+          <span style="font-size: 12px; color: var(--text-dim);">Resultado nos maiores estabelecimentos de ensino e pontos de votação da cidade</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Local de Votação (Escola / Estabelecimento)</th>
+                <th>Bairro</th>
+                <th>Endereço</th>
+                <th>Urnas</th>
+                <th style="color: var(--lula-color);">Lula (2ºT)</th>
+                <th style="color: var(--flavio-color);">Flávio (2ºT)</th>
+                <th>% Lula</th>
+                <th>% Flávio</th>
+                <th>Vencedor</th>
+                <th>Viradas</th>
+              </tr>
+            </thead>
+            <tbody id="table-escolas-body">
+              <tr>
+                <td colspan="10" style="text-align: center; color: var(--text-dim); padding: 20px;">
+                  Carregando locais de votação...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
+
   </div>
 
   <script src="app.js"></script>
